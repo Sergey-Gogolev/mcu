@@ -1,0 +1,124 @@
+#include "stdio.h"
+#include "pico/stdlib.h"
+#include "stdio-task/stdio-task.h"
+#include "protocol-task/protocol-task.h"
+#include "led-task/led-task.h"
+
+#define DEVICE_NAME "MASTERS_MC"
+#define DEVICE_VRSN "PRIME_VERSION"
+
+
+void help_callback(const char* args);
+void version_callback(const char* args);
+void mem_callback(const char* args);
+void wmem_callback(const char* args);
+void led_callback(const char* args);
+void led_period_callback(const char* args);
+
+
+api_t device_api[] =
+{
+	{"help", help_callback, "prints commands description"},
+    {"version", version_callback, "get device name and firmware version"},
+    {"mem", mem_callback, "read from memory from hex addres"},
+    {"wmem", wmem_callback, "write hex number in memory from hex addres"},
+    {"set_led_state", led_callback, "changes led state depended of an argument (0 - off, 1 - on, 2 - blink)"},
+    {"set_led_period", led_period_callback, "sets led blink frequency depended of an argument (in us)"},
+	{NULL, NULL, NULL},
+};
+
+
+void help_callback(const char* args)
+{
+    for (int i = 0; device_api[i].command_name; i++)
+    {
+        printf("\nCommand '%s' \t: %s", device_api[i].command_name, device_api[i].command_help);
+    }
+    printf("\n");
+    return;
+}
+
+void version_callback(const char* args)
+{
+	printf("device name: '%s', firmware version: %s\n", DEVICE_NAME, DEVICE_VRSN);
+}
+
+void mem_callback(const char* args)
+{
+    if (args == NULL || args[0] == '\0') {
+        printf("Error: invalid address or too few arguments\n");
+        return;
+    }
+    
+    uint32_t addr;
+    sscanf(args, "%x", &addr);
+
+    volatile uint32_t* ptr = (volatile uint32_t*)addr;
+    printf("Value at 0x%X = %x\n", addr, *ptr);
+    return;
+}
+
+void wmem_callback(const char* args)
+{
+    uint32_t addr, value;
+    sscanf(args, "%x %x", &addr, &value);
+    if (args == NULL || args[0] == '\0' || addr == 0 || addr % 4 != 0) {
+        printf("Error: invalid address or too few arguments\n");
+        return;
+    }
+    *(volatile uint32_t*)addr = value;
+}
+
+void led_callback(const char* args)
+{
+    uint32_t num;
+    led_state_t state;
+    sscanf(args, "%u", &num);
+    if (!2 < num)
+    {
+        printf("Error: invalid argument %u\n", num);
+        return; 
+    }
+    switch(num){
+        case 0:
+            state = LED_STATE_OFF;
+            break;
+        case 1:
+            state = LED_STATE_ON;
+            break;
+        case 2:
+            state = LED_STATE_BLINK;
+            break;
+    }
+    led_task_state_set(state);
+}
+
+void led_period_callback(const char* args)
+{
+    uint32_t period;
+    sscanf(args, "%u", &period);
+    if (!period)
+    {
+        printf("Error: invalid argument");
+        return;
+    }
+    led_task_period_set(period);
+    return;
+}
+
+
+
+int main()
+{
+    stdio_init_all();
+    stdio_task_init();
+    protocol_task_init(device_api);
+    led_init();
+
+    while(1)    
+    {
+        char* line = stdio_task_handle();
+        protocol_task_handle(line);
+        led_handler();
+    }
+}

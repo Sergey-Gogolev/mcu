@@ -31,7 +31,7 @@ int main()
 
         uint32_t* heap_variable = (uint32_t*)malloc(sizeof(uint32_t));
         *heap_variable = 5555;
-        printf("heap_variable | addr = 0x%X | value = u%\n", heap_variable, *heap_variable);
+        printf("heap_variable | addr = 0x%X | value = %u\n", heap_variable, *heap_variable);
 
         printf("constant variable | addr = 0x%X | value = %u\n", &constant_variable, *(&constant_variable));
         printf("constant string | addr = 0x%X | value = 0x%X, [%s]\n", DEVICE_NAME, *((uint32_t*)DEVICE_NAME), DEVICE_NAME);

@@ -10,6 +10,7 @@ int main()
     while(1)
     {
         char symbol = getchar();
+        
         printf("received char: %c [ ASCII code: %d ]\n", symbol, symbol);
     }
 }

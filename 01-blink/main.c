@@ -10,9 +10,7 @@ int main()
 
     while(1)
     {
-        gpio_put(LED_PIN, 1);
-        sleep_ms(250);
-        gpio_put(LED_PIN, 0);
-        sleep_ms(1000);
+        gpio_put(LED_PIN, !gpio_get(LED_PIN));
+        sleep_ms(500);
     }
 }
