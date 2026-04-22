@@ -8,6 +8,9 @@
 #define CH_ADC 0
 #define CH_HS 4
 
+adc_task_state_t adc_state = ADC_TASK_STATE_IDLE;   
+uint64_t ts = 0;
+uint64_t ADC_TASK_MEAS_PERIOD_US = 100000;
 
 void adc_task_init()
 {
@@ -31,3 +34,27 @@ float adc_task_tempm()
     return 27.0f - (3.3f * (float)temp_counts / 4096.0f - 0.706f) / 0.001721f;
 }
 
+void adc_task_set_state(adc_task_state_t state)
+{
+    adc_state = state;
+}
+
+void adc_task_handle()
+{
+    switch(adc_state)
+    {
+    case ADC_TASK_STATE_IDLE:
+        break;
+    case ADC_TASK_STATE_RUN:
+        if (time_us_64() > ts)
+        {
+            ts = time_us_64() + ADC_TASK_MEAS_PERIOD_US;
+            float voltage_V = adc_task_measure();
+            float temp_C = adc_task_tempm();
+            printf("%f %f\n", voltage_V, temp_C);
+        }
+        break;
+    default:
+        break;
+    }
+}

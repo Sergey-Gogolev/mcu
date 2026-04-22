@@ -17,7 +17,8 @@ void led_callback(const char* args);
 void led_period_callback(const char* args);
 void get_adc_callback(const char* args);
 void get_temp_callback(const char* args);
-
+void tm_start_callback(const char* args);
+void tm_stop_callback(const char* args);
 
 api_t device_api[] =
 {
@@ -29,6 +30,8 @@ api_t device_api[] =
     {"led_period", led_period_callback, "sets led blink frequency depended of an argument (in us)"},
     {"get_adc", get_adc_callback, "mesuares voltage on pin 26 in range 0-3.3V"},
     {"get_temp", get_temp_callback, "mesuares local MC temperature in Celcious"},
+    {"tm_start", tm_start_callback, "starts sending telemetry [voltage_V on GPIO26; temp_C on chip] in Serial port"},
+    {"tm_stop", tm_stop_callback, "stops sending telemetry"},
 	{NULL, NULL, NULL},
 };
 
@@ -123,6 +126,17 @@ void get_temp_callback(const char* args)
     printf("%f\n", temp_C);
 }
 
+void tm_start_callback(const char* args)
+{
+    adc_task_set_state(ADC_TASK_STATE_RUN);
+}
+
+void tm_stop_callback(const char* args)
+{
+    adc_task_set_state(ADC_TASK_STATE_IDLE);
+}
+
+
 
 int main()
 {
@@ -137,5 +151,6 @@ int main()
         char* line = stdio_task_handle();
         protocol_task_handle(line);
         led_handler();
+        adc_task_handle();
     }
 }
