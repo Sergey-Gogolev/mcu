@@ -15,15 +15,14 @@ void wmem_callback(const char* args);
 void led_callback(const char* args);
 void led_period_callback(const char* args);
 
-
 api_t device_api[] =
 {
 	{"help", help_callback, "prints commands description"},
     {"version", version_callback, "get device name and firmware version"},
     {"mem", mem_callback, "read from memory from hex addres"},
     {"wmem", wmem_callback, "write hex number in memory from hex addres"},
-    {"set_led_state", led_callback, "changes led state depended of an argument (0 - off, 1 - on, 2 - blink)"},
-    {"set_led_period", led_period_callback, "sets led blink frequency depended of an argument (in us)"},
+    {"led", led_callback, "changes led state depended of an argument (0 - off, 1 - on, 2 - blink)"},
+    {"led_period", led_period_callback, "sets led blink frequency depended of an argument (in us)"},
 	{NULL, NULL, NULL},
 };
 
@@ -74,10 +73,10 @@ void led_callback(const char* args)
     uint32_t num;
     led_state_t state;
     sscanf(args, "%u", &num);
-    if (!2 < num)
+    if (2 < num)
     {
         printf("Error: invalid argument %u\n", num);
-        return; 
+        return;
     }
     switch(num){
         case 0:
